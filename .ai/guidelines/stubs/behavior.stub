@@ -1,0 +1,38 @@
+## COMPOSER SCRIPTS
+
+This project defines named scripts in `composer.json`. **Always prefer `composer scripts` over calling vendor binaries directly** when a script exists for the tool. Check the scripts section of `composer.json` before invoking any quality tool.
+
+| Script | Purpose |
+|---|---|
+| `composer test:coverage` | Generate HTML coverage report |
+| `composer test:coverage-ci` | Generate Clover coverage report |
+| `composer style:fix` | Run Laravel Pint formatter |
+| `composer phpstan` | Run PHPStan with project config + 2G memory limit |
+| `composer rector` | Run Rector with project config |
+
+---
+
+## AGENT BEHAVIOR
+
+### Communication Rules
+- **No Emojis** in responses (except requirement markers).
+- **No Fluff Documentation**: Never generate unnecessary markdown files (e.g., `COMPLETION_REPORT.md`, `SUMMARY.md`, etc.).
+- **Never assume action from observation**.
+- When the user asks a question about your changes, don't imply the user is asking you to change anything. **Answer the question** as is and wait for the next instruction.
+
+### Artifact Management Rules
+
+- **Use `.ai/artifacts/` folder EXCLUSIVELY** for all AI-generated artifacts including:
+  - Execution plans (unless you are in an environment that has interactive plans like Antigravity)
+  - Summaries
+  - Audits
+  - Analysis reports
+  - Investigation notes
+  - Any other AI-generated documentation
+- **NEVER write AI-generated artifacts** to other folders (e.g., `docs/`, root directory).
+- **Keep artifacts organized** with descriptive filenames including dates (e.g., `SECURITY_AUDIT_2026_01_14.md`).
+- **NEVER modify user-managed documentation** in `docs/`, `wiki/`, or any other project folders unless explicitly requested.
+
+### TASK FINALIZATION
+*(Refer to skill: `task-finalization` for procedure)*
+Before completing a task, you MUST run the project's quality tools (Style, Analysis, Refactor, Types, Tests) as defined in the skill. This is not optional.

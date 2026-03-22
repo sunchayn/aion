@@ -1,0 +1,6 @@
+## CODE QUALITY
+
+### CODE COMMENTING
+- **Core Principle**: Less is More.
+- **DO comment**: Non-obvious decisions, complex algorithms, workarounds (Problem → Fallback → Solution).
+- **DON'T comment**: Obvious code, restating method names, step-by-step descriptions.

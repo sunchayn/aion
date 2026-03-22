@@ -1,0 +1,53 @@
+name: run-php-tests
+
+on:
+  pull_request:
+  push:
+    branches: [ base ]
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      php: ${{ steps.filter.outputs.php }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            php:
+              - '**.php'
+              - '.github/workflows/aion-tests.yml'
+              - 'composer.json'
+              - 'composer.lock'
+              - '.aion/**'
+
+  test:
+    needs: changes
+    if: needs.changes.outputs.php == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [api-stateless, web-stateful, api-stateless-full, api-stateful-lite, oauth-full]
+
+    name: ${{ matrix.profile }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: curl, mbstring, pcntl, intl, fileinfo, sodium, zip, sqlite, mysql, pgsql
+          coverage: none
+
+      - name: Install Root Dependencies
+        run: composer install --no-interaction --no-progress --ansi --no-scripts
+
+      - name: Run Sandbox Profile
+        run: php .aion/spark aion:sandbox ${{ matrix.profile }}

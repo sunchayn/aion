@@ -1,0 +1,15 @@
+app/
+├── Modules/
+│   └── {Domain}/
+│       ├── Actions/          # Business logic entry points
+│       ├── Contracts/        # Interfaces for cross-module communication
+│       ├── DTOs/             # Data Transfer Objects
+│       ├── Enums/            # Domain-specific enums
+│       ├── Models/           # Eloquent models
+│       └── Services/         # Internal helper services
+└── Http/
+    └── {Application}/
+        └── {Domain}/
+            ├── Controllers/  # Route handlers
+            ├── Requests/     # Validation logic
+            └── Resources/    # API transformation logic

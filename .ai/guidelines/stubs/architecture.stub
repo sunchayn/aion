@@ -1,0 +1,59 @@
+## MODULAR ARCHITECTURE
+
+### CORE ARCHITECTURAL PRINCIPLE
+The application is structured into **Modules** representing distinct business domains. Each module must be self-contained and isolated.
+
+### MODULE BOUNDARIES
+- **Modules must be isolated**. No direct use of another module's Models/Actions.
+- **Communication via Contracts**: Use interfaces in `app/Modules/Domain/Contracts`.
+- **Prefer Events for Decoupling**.
+- **No Cross-Module Database Joins**.
+
+### DIRECTORY STRUCTURE
+*(Procedure: Refer to Skill: 'scaffold-module')*
+
+- **Logic**: `app/Modules/{Domain}/`
+    - `Actions/`: Single-method business logic classes.
+    - `Models/`: Domain-specific Eloquent models.
+    - `DTOs/`: Readonly data transfer objects.
+    - `Contracts/`: Interfaces for cross-module interaction.
+    - `Enums/`: Domain enumerations.
+    - `Services/`: Complex logic spanning multiple actions.
+    - `Exceptions/`: Domain-specific exceptions.
+- **Transport**: `app/Http/{Application}/{Domain}/`
+    - `Controllers/`: Bridges HTTP requests to Actions.
+    - `Requests/`: Form Requests for validation.
+    - `Resources/`: Eloquent API Resources for JSON transformation.
+    - `Shared/`: Shared components for all domains.
+
+### SHARED COMPONENTS
+- **Definition**: Components located in `app/Modules/Shared/` (e.g., `User` model, shared interfaces).
+- **Status**: Shared models are considered **Global Contracts**. They may be used directly across module boundaries without additional interfaces.
+- **Limit**: Only truly universal domain concepts should reside in the Shared module.
+### SERVICES
+- **Purpose**: Orchestrate logic spanning multiple Actions or interact with complex external SDKs.
+- **Constraint**: Must adhere to strict typing and constructor property promotion.
+- **Caution**: Avoid "fat services" that violate single-responsibility. Prefer granular Actions.
+
+### EXCEPTIONS
+- **Standard**: Actions must throw domain-specific exceptions (e.g., `UnableToLoginException`) for expected failure states.
+- **Handling**: Controllers are responsible for catching domain exceptions and converting them to HTTP responses (e.g., via `ValidationException`).
+
+### ACTIONS
+*(Procedure: Refer to Skill: 'create-dto-action')*
+
+- **Naming**: Use `VerbNounAction` naming convention (e.g., `CreateUserAction`).
+- **Method**: Must have exactly **ONE** public method: `public function execute()`.
+- **Parameters**: Accept only **ONE** parameter (use a DTO for multiple).
+- **No Data Querying**: Actions should be pure executors of logic. They must NOT perform database queries (e.g. `User::find()`) to retrieve their inputs.
+- **Pure State**: All necessary models or state MUST be provided to the `execute()` method via the DTO.
+- **Isolation**: Return Contracts (e.g. `AuthenticatableWithIdentity`) rather than concrete Models.
+- **Testability**: Mark with `/** @final */` annotation instead of the `final` keyword.
+
+### DTOS
+*(Procedure: Refer to Skill: 'create-dto-action')*
+
+- **Structure**: Must be `final readonly` classes.
+- **Promotion**: Use PHP 8.2+ `readonly` class modifier and constructor property promotion.
+- **Provisioning**: DTOs are responsible for encapsulating ALL inputs required by the Action.
+- **Factories**: Use static factory methods (e.g., `fromRequest()`) to resolve and inject models/dependencies. The factory is the layer where "finding" data occurs, keeping the Action clean.

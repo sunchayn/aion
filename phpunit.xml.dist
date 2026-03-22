@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="./vendor/autoload.php"
+         colors="true"
+         cacheDirectory="storage/build/cache"
+>
+    <testsuites>
+        <testsuite name="integration">
+            <directory suffix="IntegrationTest.php">tests/Integration</directory>
+        </testsuite>
+        <testsuite name="functional">
+            <directory suffix="FunctionalTest.php">tests/App</directory>
+        </testsuite>
+        <testsuite name="unit">
+            <directory suffix="UnitTest.php">tests/App</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory>app</directory>
+        </include>
+        <exclude>
+            <directory>app/Http/Api/routes</directory>
+            <directory>app/Http/Web/routes</directory>
+        </exclude>
+    </source>
+    <php>
+        <env name="APP_DEBUG" value="true"/>
+        <env name="APP_ENV" value="testing"/>
+        <env name="APP_MAINTENANCE_DRIVER" value="file"/>
+        <env name="BCRYPT_ROUNDS" value="4"/>
+        <env name="BROADCAST_CONNECTION" value="null"/>
+        <env name="CACHE_STORE" value="array"/>
+        <env name="DB_CONNECTION" value="sqlite"/>
+        <env name="DB_DATABASE" value=":memory:"/>
+        <env name="MAIL_MAILER" value="array"/>
+        <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="SESSION_DRIVER" value="array"/>
+        <env name="PULSE_ENABLED" value="false"/>
+        <env name="TELESCOPE_ENABLED" value="false"/>
+        <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <env name="APP_KEY" value="base64:u6i/I5L0j5k3Q5r4S5t6U7v8W9x0Y1z2A3B4C5D6E7F="/>
+        <env name="JWT_SECRET" value="DdgOFf4vvxCT5N6tRTd1peKTq8XVcgO5pC1FtO8P98XzlOPx03cPYEIIKso2XTX4"/>
+        <env name="DB_FOREIGN_KEYS" value="false"/>
+    </php>
+</phpunit>

@@ -1,0 +1,24 @@
+## COMPLIANCE PROCEDURES
+
+### UNIVERSAL AGENT CONSTRAINTS
+
+**CRITICAL**: As an autonomous coding agent, you MUST obey these execution constraints. These rules govern your tool-calling loops and internal planning, not just your conversational responses to the user.
+
+#### Constraint 1: Mandatory Skill Reading via Tools
+- **Rule**: It is STRICTLY FORBIDDEN to create or modify **any test file** or **class file** without FIRST executing the `view_file` tool to read the corresponding documentation in `.ai/skills/` or `.ai/guidelines/`.
+- **Requirement**: You MUST physically run `view_file` to ingest `.ai/skills/format-phpunit-tests/SKILL.md` into your short-term tool memory before executing a tool to edit/create a test. Relying on your generic pre-training is a critical failure.
+
+#### Constraint 2: Phased Planning Locks
+- **Rule**: Before executing a file modification, you MUST explicitly document your compliance check in your conversational text or the `todo_write`/`task_boundary` summary.
+- **Requirement**: Stop and evaluate: "Have I read the relevant `.ai/` skill? Does my planned change match the custom standard?" You MUST output the phrase: `[Compliance Verified: Rule Section X]` before executing the write.
+
+#### Constraint 3: Verification & Completion Locks
+- **Rule**: You are STRICTLY FORBIDDEN from signaling task completion to the human user without first executing system-level verification that proves your work is correct.
+- **Requirement**: Before calling `notify_user` or returning control, you MUST run `composer phpstan` and `composer test:parallel` (for backend) or appropriate frontend linters/tests. You must fix any reported violations autonomously.
+
+### MANDATORY EXECUTION PROTOCOL
+
+1. **Tool Check**: Have you used the `view_file` tool on the relevant `.ai/skills` file for this task yet? If not, do it NOW.
+2. **Action Plan**: Use the internal `task_boundary` or `todo_write` mechanisms to set checkpoints linked to these specific standards.
+3. **Trace Execution**: Output `[Compliance Verified...]` in your summaries before editing files.
+4. **Compile Standards**: If you modify *this* guidelines folder, you must execute `php artisan boost:update` to finalize the AI prompts.

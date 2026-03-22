@@ -1,0 +1,41 @@
+{
+    "$schema": "https://getcomposer.org/schema.json",
+    "name": "sunchayn/aion",
+    "description": "The initial composer file to start a new project via Aion Starter Kit. This file will be re-populated based on the starter kit variant.",
+    "type": "project",
+    "keywords": [
+        "laravel-starter-kit",
+        "starter-kit",
+        "modular-laravel",
+        "agentic-ai",
+        "aion"
+    ],
+    "license": "MIT",
+    "require": {
+        "php": "^8.4",
+        "symfony/console": "^7.4",
+        "laravel/prompts": "^0.3.15",
+        "league/flysystem": "^3.0",
+        "league/flysystem-local": "^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Aion\\": ".aion/"
+        }
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "php .aion/spark"
+        ],
+        "post-update-cmd": [
+            "php .aion/spark"
+        ]
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "require-dev": {
+        "laravel/pint": "*",
+        "symfony/var-dumper": "*",
+        "rector/rector": "*"
+    }
+}

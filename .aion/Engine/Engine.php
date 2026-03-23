@@ -2,12 +2,10 @@
 
 namespace Aion\Engine;
 
-use Aion\Engine\Operations\BackupProjectOperation;
 use Aion\Engine\Operations\CopyFileOperation;
 use Aion\Engine\Operations\DeleteFileOperation;
 use Aion\Engine\Operations\DeleteFolderOperation;
 use Aion\Engine\Operations\OperationContract;
-use Aion\Engine\Operations\RestoreProjectOperation;
 use Aion\Engine\Operations\RunCommandOperation;
 use Aion\Features\AionFeatureContract;
 use Aion\Stacks\StackStrategyContract;
@@ -35,24 +33,14 @@ class Engine
     {
         $operations = $this->resolveOperations();
 
-        try {
-            foreach ($operations as $operation) {
-                $onProgress($operation->getDescription().($this->dryRun ? ' (Dry Run)' : ''));
+        foreach ($operations as $operation) {
+            $onProgress($operation->getDescription().($this->dryRun ? ' (Dry Run)' : ''));
 
-                $operation->validate($this->filesystem);
+            $operation->validate($this->filesystem);
 
-                if (! $this->dryRun) {
-                    $operation->execute($this->filesystem);
-                }
-            }
-        } catch (Throwable $e) {
             if (! $this->dryRun) {
-                $onProgress("An error occurred <:{$e->getMessage()}>.\n Rolling back project changes...");
-
-                (new RestoreProjectOperation)->execute($this->filesystem);
+                $operation->execute($this->filesystem);
             }
-
-            throw $e;
         }
     }
 
@@ -60,7 +48,6 @@ class Engine
     private function resolveOperations(): array
     {
         return [
-            new BackupProjectOperation,
             ...$this->initializationOperations(),
             ...$this->stack->getOperations($this->pathResolver),
             ...$this->getFeatureOperations(),

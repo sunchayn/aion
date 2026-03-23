@@ -12,7 +12,6 @@ use Aion\Stacks\StackStrategyContract;
 use League\Flysystem\Filesystem;
 use League\Flysystem\FilesystemOperator;
 use League\Flysystem\Local\LocalFilesystemAdapter;
-use Throwable;
 
 class Engine
 {

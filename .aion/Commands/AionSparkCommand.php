@@ -168,8 +168,7 @@ class AionSparkCommand extends Command
         AionConfig $aionConfig,
         OutputInterface $output,
         bool $dryRun = false,
-    ): void
-    {
+    ): void {
         $engine = new Engine(
             registry: self::$featureRegistry,
             stack: $stackStrategy,
@@ -198,7 +197,7 @@ class AionSparkCommand extends Command
 
     private function installDependencies(OutputInterface $output): void
     {
-        if ($this->isInteractive && !confirm('Would you like to install the composer dependencies now?')) {
+        if ($this->isInteractive && ! confirm('Would you like to install the composer dependencies now?')) {
             return;
         }
 

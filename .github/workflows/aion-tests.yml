@@ -44,7 +44,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
-          extensions: curl, mbstring, intl, fileinfo, sodium, zip, sqlite, mysql, pgsql
+          extensions: bcmath, curl, mbstring, intl, fileinfo, sodium, zip, sqlite3, pdo_sqlite, mysql, pdo_mysql, pgsql, pdo_pgsql
           coverage: none
 
       - name: Install Root Dependencies

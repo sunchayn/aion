@@ -80,7 +80,7 @@ class Engine
     private function cleanupOperations(): array
     {
         return [
-            new RunCommandOperation('vendor/bin/pint --silent'),
+            new RunCommandOperation('composer exec pint --silent'),
             new DeleteFolderOperation($this->pathResolver->internal()),
             new DeleteFileOperation('.github/workflows/aion-tests.yml'),
         ];

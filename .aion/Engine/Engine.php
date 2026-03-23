@@ -80,7 +80,7 @@ class Engine
     private function cleanupOperations(): array
     {
         $cleanup = [
-            new RunCommandOperation('composer exec pint --silent'),
+            new RunCommandOperation('composer exec pint', quite: true),
             new DeleteFileOperation('.github/workflows/aion-tests.yml'),
         ];
 

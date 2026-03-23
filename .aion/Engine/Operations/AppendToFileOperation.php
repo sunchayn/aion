@@ -18,8 +18,8 @@ class AppendToFileOperation implements OperationContract
         }
 
         $content = $filesystem->read($this->filePath);
-        
-        $content = rtrim($content) . "\n\n" . ltrim($this->content) . "\n";
+
+        $content = rtrim($content)."\n\n".ltrim($this->content)."\n";
 
         $filesystem->write($this->filePath, $content);
     }

@@ -4,7 +4,6 @@ namespace Aion\Features\System;
 
 use Aion\Choices\Enums\ConfigKeyEnum;
 use Aion\Choices\Enums\LogChannelEnum;
-use Aion\Choices\Enums\LoggingInfrastructureEnum;
 use Aion\Engine\AionConfig;
 use Aion\Engine\Operations\RemoveConfigBlockOperation;
 use Aion\Engine\PathResolver;

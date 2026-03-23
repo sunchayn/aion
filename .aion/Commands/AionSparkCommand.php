@@ -113,6 +113,10 @@ class AionSparkCommand extends Command
 
         info('>_ ✨ Setup is complete. Enjoy your new Aion-backed project!'.($input->getOption('dry-run') ? ' (Dry Run Complete)' : ''));
 
+        if (PHP_OS_FAMILY === 'Windows' && ! $input->getOption('dry-run')) {
+            info('>_ Note: On Windows, you should manually delete the .aion folder to finish the cleanup.');
+        }
+
         return self::SUCCESS;
     }
 
@@ -168,8 +172,7 @@ class AionSparkCommand extends Command
         AionConfig $aionConfig,
         OutputInterface $output,
         bool $dryRun = false,
-    ): void
-    {
+    ): void {
         $engine = new Engine(
             registry: self::$featureRegistry,
             stack: $stackStrategy,
@@ -198,13 +201,14 @@ class AionSparkCommand extends Command
 
     private function installDependencies(OutputInterface $output): void
     {
-        if ($this->isInteractive && !confirm('Would you like to install the composer dependencies now?')) {
+        if ($this->isInteractive && ! confirm('Would you like to install the composer dependencies now?')) {
             return;
         }
 
-        $output->writeln("\n<comment>Installing dependencies...</comment>\n");
+        if (file_exists('.env.example') && ! file_exists('.env')) {
+            copy('.env.example', '.env');
+        }
 
-        passthru('cp -f .env.example .env');
         passthru('composer install --no-scripts');
         passthru('php artisan key:generate');
 

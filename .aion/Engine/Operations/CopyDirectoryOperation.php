@@ -7,9 +7,12 @@ use League\Flysystem\FilesystemOperator;
 class CopyDirectoryOperation implements OperationContract
 {
     public function __construct(
-        private readonly string $source,
-        private readonly string $destination
-    ) {}
+        private string $source,
+        private string $destination
+    ) {
+        $this->source = str_replace('\\', '/', $this->source);
+        $this->destination = str_replace('\\', '/', $this->destination);
+    }
 
     public function execute(FilesystemOperator $filesystem): void
     {

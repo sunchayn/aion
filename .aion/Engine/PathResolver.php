@@ -51,10 +51,10 @@ class PathResolver
 
     private function join(string $base, string $path): string
     {
-        $path = ltrim($path, DIRECTORY_SEPARATOR);
+        $path = ltrim($path, '/');
 
         return $path === ''
             ? $base
-            : rtrim($base, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.$path;
+            : rtrim($base, '/').'/'.$path;
     }
 }

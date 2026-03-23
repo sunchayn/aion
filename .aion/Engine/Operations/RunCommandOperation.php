@@ -4,14 +4,29 @@ namespace Aion\Engine\Operations;
 
 use League\Flysystem\FilesystemOperator;
 
+use function Laravel\Prompts\error;
+
 class RunCommandOperation implements OperationContract
 {
     public function __construct(
-        private readonly string $command
+        private readonly string $command,
+        private readonly bool $quite = false,
     ) {}
 
     public function execute(FilesystemOperator $filesystem): void
     {
+        if ($this->quite) {
+            exec($this->command, $output, $return);
+
+            if ($return !== 0) {
+                error($output[0] ?? 'Command didn\'t finish successfully!');
+
+                return;
+            }
+
+            return;
+        }
+
         passthru($this->command);
     }
 

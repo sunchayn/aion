@@ -14,6 +14,7 @@ use Aion\Stacks\StackStrategyContract;
 use League\Flysystem\Filesystem;
 use League\Flysystem\FilesystemOperator;
 use League\Flysystem\Local\LocalFilesystemAdapter;
+use Throwable;
 
 class Engine
 {
@@ -44,11 +45,13 @@ class Engine
                     $operation->execute($this->filesystem);
                 }
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             if (! $this->dryRun) {
-                $onProgress('An error occurred. Rolling back project changes...');
+                $onProgress("An error occurred <:{$e->getMessage()}>.\n Rolling back project changes...");
+
                 (new RestoreProjectOperation)->execute($this->filesystem);
             }
+
             throw $e;
         }
     }

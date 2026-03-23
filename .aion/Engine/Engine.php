@@ -79,10 +79,16 @@ class Engine
     /** @return OperationContract[] */
     private function cleanupOperations(): array
     {
-        return [
+        $cleanup = [
             new RunCommandOperation('composer exec pint --silent'),
-            new DeleteFolderOperation($this->pathResolver->internal()),
             new DeleteFileOperation('.github/workflows/aion-tests.yml'),
         ];
+
+        // On Windows, the .aion folder cannot be deleted while the spark command is running from it.
+        if (PHP_OS_FAMILY !== 'Windows') {
+            $cleanup[] = new DeleteFolderOperation($this->pathResolver->internal());
+        }
+
+        return $cleanup;
     }
 }

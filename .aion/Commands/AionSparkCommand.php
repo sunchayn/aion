@@ -113,6 +113,10 @@ class AionSparkCommand extends Command
 
         info('>_ ✨ Setup is complete. Enjoy your new Aion-backed project!'.($input->getOption('dry-run') ? ' (Dry Run Complete)' : ''));
 
+        if (PHP_OS_FAMILY === 'Windows' && ! $input->getOption('dry-run')) {
+            info('>_ Note: On Windows, you should manually delete the .aion folder to finish the cleanup.');
+        }
+
         return self::SUCCESS;
     }
 

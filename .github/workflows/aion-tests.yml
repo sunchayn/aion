@@ -26,14 +26,15 @@ jobs:
   test:
     needs: changes
     if: needs.changes.outputs.php == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest, windows-latest]
         profile: [api-stateless, web-stateful, api-stateless-full, api-stateful-lite, oauth-full]
 
-    name: ${{ matrix.profile }}
+    name: ${{ matrix.profile }} on ${{ matrix.os }}
 
     steps:
       - name: Checkout code
@@ -43,7 +44,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
-          extensions: curl, mbstring, pcntl, intl, fileinfo, sodium, zip, sqlite, mysql, pgsql
+          extensions: curl, mbstring, intl, fileinfo, sodium, zip, sqlite, mysql, pgsql
           coverage: none
 
       - name: Install Root Dependencies

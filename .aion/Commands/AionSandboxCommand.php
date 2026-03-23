@@ -3,6 +3,9 @@
 namespace Aion\Commands;
 
 use Aion\Commands\UI\SparkUI;
+use League\Flysystem\Filesystem;
+use League\Flysystem\FilesystemOperator;
+use League\Flysystem\Local\LocalFilesystemAdapter;
 use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -25,6 +28,14 @@ class AionSandboxCommand extends Command
     private const string INTERACTIVE_PROFILE_LABEL = 'no profile (interactive mode)';
 
     private SparkUI $ui;
+
+    private const array MIRROR_EXLUSION = [
+        '.aion/.sandbox',
+        'vendor',
+        'node_modules',
+        'composer.lock',
+        '.git',
+    ];
 
     protected function configure(): void
     {
@@ -118,18 +129,45 @@ class AionSandboxCommand extends Command
     {
         $output->writeln(" <fg=yellow>></> Cleaning previous sandbox: {$sandboxDir}");
 
-        if (is_dir($sandboxDir)) {
-            $this->exec('rm -rf '.escapeshellarg($sandboxDir));
+        $adapter = new LocalFilesystemAdapter(getcwd());
+        $filesystem = new Filesystem($adapter);
+
+        if ($filesystem->directoryExists($sandboxDir)) {
+            $filesystem->deleteDirectory($sandboxDir);
         }
 
-        mkdir($sandboxDir, 0755, true);
+        $filesystem->createDirectory($sandboxDir);
 
         $output->writeln(' <fg=yellow>></> Mirroring project to sandbox...');
 
-        $this->exec(sprintf(
-            'rsync -a --exclude=".aion/.sandbox" --exclude="vendor" --exclude="node_modules" --exclude="composer.lock" ./ %s/',
-            escapeshellarg($sandboxDir)
-        ));
+        $this->mirror($filesystem, source: '.', destination: $sandboxDir);
+    }
+
+    private function mirror(FilesystemOperator $filesystem, string $source, string $destination): void
+    {
+        foreach ($filesystem->listContents($source, false) as $item) {
+            $path = $item->path();
+
+            foreach (self::MIRROR_EXLUSION as $pattern) {
+                if ($path === $pattern || str_starts_with($path, $pattern.'/')) {
+                    continue 2;
+                }
+            }
+
+            $target = $destination.'/'.$path;
+
+            if ($item->isFile()) {
+                $filesystem->copy($path, $target);
+
+                continue;
+            }
+
+            if ($item->isDir()) {
+                $filesystem->createDirectory($target);
+
+                $this->mirror($filesystem, $path, $destination);
+            }
+        }
     }
 
     private function installDependencies(string $sandboxDir, OutputInterface $output): void

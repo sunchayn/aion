@@ -35,6 +35,7 @@ class AionSandboxCommand extends Command
         'node_modules',
         'composer.lock',
         '.git',
+        '.env',
     ];
 
     protected function configure(): void

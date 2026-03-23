@@ -201,9 +201,10 @@ class AionSparkCommand extends Command
             return;
         }
 
-        $output->writeln("\n<comment>Installing dependencies...</comment>\n");
+        if (file_exists('.env.example') && ! file_exists('.env')) {
+            copy('.env.example', '.env');
+        }
 
-        passthru('cp -f .env.example .env');
         passthru('composer install --no-scripts');
         passthru('php artisan key:generate');
 

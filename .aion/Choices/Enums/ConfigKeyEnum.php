@@ -12,4 +12,5 @@ enum ConfigKeyEnum: string
     case DB = 'db';
     case PhpStan = 'phpstan';
     case Frontend = 'frontend';
+    case AgenticAi = 'agentic-ai';
 }

@@ -32,7 +32,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        profile: [api-stateless, web-stateful, api-stateless-full, api-stateful-lite, oauth-full]
+        profile: [api-stateless, web-stateful, api-stateless-full, api-stateful-lite, oauth-full-no-ai]
 
     name: ${{ matrix.profile }} on ${{ matrix.os }}
 

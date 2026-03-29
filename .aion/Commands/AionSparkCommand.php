@@ -12,6 +12,7 @@ use Aion\Engine\PathResolver;
 use Aion\Features\Authentication\ApiTokensFeature;
 use Aion\Features\Authentication\OAuthFeature;
 use Aion\Features\ExternalTools\ECSLoggingFeature;
+use Aion\Features\System\AgenticAiSystemFeature;
 use Aion\Features\System\DatabaseSystemFeature;
 use Aion\Features\System\LogSystemFeature;
 use Aion\Features\System\PhpStanSystemFeature;
@@ -70,6 +71,7 @@ class AionSparkCommand extends Command
             LogSystemFeature::class,
             DatabaseSystemFeature::class,
             PhpStanSystemFeature::class,
+            AgenticAiSystemFeature::class,
         ]);
     }
 
@@ -108,7 +110,7 @@ class AionSparkCommand extends Command
         );
 
         if (! $input->getOption('dry-run')) {
-            $this->installDependencies($output);
+            $this->installDependencies($output, $aionConfig);
         }
 
         info('>_ ✨ Setup is complete. Enjoy your new Aion-backed project!'.($input->getOption('dry-run') ? ' (Dry Run Complete)' : ''));
@@ -199,7 +201,7 @@ class AionSparkCommand extends Command
         $output->writeln('');
     }
 
-    private function installDependencies(OutputInterface $output): void
+    private function installDependencies(OutputInterface $output, AionConfig $config): void
     {
         if ($this->isInteractive && ! confirm('Would you like to install the composer dependencies now?')) {
             return;
@@ -212,7 +214,7 @@ class AionSparkCommand extends Command
         passthru('composer install --no-scripts');
         passthru('php artisan key:generate');
 
-        if ($this->isInteractive) {
+        if ($this->isInteractive && $config->bool(ConfigKeyEnum::AgenticAi, true)) {
             passthru('php artisan boost:install');
         }
 

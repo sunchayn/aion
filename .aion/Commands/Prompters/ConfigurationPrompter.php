@@ -85,7 +85,9 @@ class ConfigurationPrompter
         bool $default = false,
         ?string $hint = null,
     ): bool {
-        if ($predefined = $this->getPredefinedValue($option)) {
+        $predefined = $this->getPredefinedValue($option);
+
+        if ($predefined !== null) {
             info("> Using pre-configured $displayName: ".($predefined === '1' || $predefined === true ? 'Yes' : 'No'));
 
             return filter_var($predefined, FILTER_VALIDATE_BOOLEAN);
@@ -109,7 +111,9 @@ class ConfigurationPrompter
         bool $isMulti = false,
         ?string $hint = null
     ): mixed {
-        if ($predefined = $this->getPredefinedValue($option)) {
+        $predefined = $this->getPredefinedValue($option);
+
+        if ($predefined !== null) {
             $parsed = $isMulti ? explode(',', (string) $predefined) : $predefined;
             $display = $isMulti ? implode(', ', (array) $parsed) : (string) $parsed;
 

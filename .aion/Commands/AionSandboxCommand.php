@@ -233,7 +233,7 @@ class AionSandboxCommand extends Command
             'web-stateful' => ['--frontend', '--api-type=stateful', '--logging-structure=default', '--oauth', '--oauth-providers=google'],
             'api-stateless-full' => ['--no-frontend', '--api-type=stateless', '--db=mysql,pgsql', '--logging-structure=ecs', '--phpstan=9', '--oauth', '--oauth-providers=google,github,apple'],
             'api-stateful-lite' => ['--no-frontend', '--api-type=stateful', '--db=sqlite', '--logging-structure=default', '--logs=stderr', '--phpstan=5'],
-            'oauth-full' => ['--no-frontend', '--api-type=stateless', '--oauth', '--oauth-providers=google,github,apple'],
+            'oauth-full-no-ai' => ['--no-frontend', '--api-type=stateless', '--oauth', '--oauth-providers=google,github,apple', '--no-agentic-ai'],
         ];
     }
 }

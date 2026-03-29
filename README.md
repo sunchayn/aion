@@ -21,13 +21,24 @@ Aion is designed for developers who want full control over their application's f
 - **Clutter-free**: A minimalist repository structure where unnecessary folders (e.g., `resources`) are omitted when not required. Routes are isolated within Application directories in `app/Http`, and tool configurations are centralized in the `tools/` folder.
 - **Customizable**: The configuration wizard allows you to pick the application type, support FE or not and perform granular cleanups, such as selecting only required database and log channel, ensuring you start with a lean and clutter-free repository.
 
-## Technical Features
+### Kit Technical Details
 
 - **Modular (Pseudo-DDD)**: Business logic is decoupled into domain modules (`app/Modules`) and transport layers (a.k.a. Applications) living in `app/Http`.
 - **Agentic-AI Ready**: Aion provides specialized AI guidelines and skills that build upon Laravel Boost. These are native to the codebase, enabling AI assistants to understand and follow your local architectural patterns with precision.
 - **Flexible Stacks**: Supports Headless (API-only), or bare-minimum frontend implementations using Vue or Blade (no UI is provided as of now, only the infrastructure).
 - **Strict Defaults**: Enforces strict Laravel standards (CarbonImmutable dates, strict models, and auto-eager loading). 
 - **ECS Logs Provided**: Supports using Elastic Common Schema (ECS) standardized logs across the board.
+
+### Available Features
+
+Feature-wise, the authentication flow is shipped with the kit by default.
+- Registration/login (stateless and stateful) \[configurable/opt-in\]
+- Password Reset
+- Email verification
+- Token refresh (for stateless auth) \[configurable/opt-in\]
+- Two-Factor Auth
+- Oauth [configurable/opt-in]
+- Magic Links
 
 ## Directory Structure
 

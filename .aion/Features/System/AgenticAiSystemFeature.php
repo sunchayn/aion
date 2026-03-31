@@ -8,18 +8,19 @@ use Aion\Engine\Operations\DeleteFolderOperation;
 use Aion\Engine\Operations\RemoveComposerDependencyOperation;
 use Aion\Engine\Operations\RemoveComposerScriptOperation;
 use Aion\Engine\PathResolver;
+use Aion\Engine\PromptTypeEnum;
 use Aion\Features\AionFeatureContract;
 use Aion\Features\OptionDefinition;
 use Aion\Stacks\StackStrategyContract;
 
 readonly class AgenticAiSystemFeature implements AionFeatureContract
 {
-    public static function getOptionSchema(): array
+    public static function getOptionsDefinitions(): array
     {
         return [
             ConfigKeyEnum::AgenticAi->value => new OptionDefinition(
                 label: 'Would you like to add Agentic AI support?',
-                type: 'confirm',
+                type: PromptTypeEnum::Confirm,
                 default: true,
                 hint: 'Adds laravel boost package and extra AI Guidelines tailored to the shipped architecture'
             ),
@@ -33,7 +34,9 @@ readonly class AgenticAiSystemFeature implements AionFeatureContract
         }
 
         yield new DeleteFolderOperation('.ai');
+
         yield new RemoveComposerDependencyOperation('laravel/boost', dev: true);
+
         yield new RemoveComposerScriptOperation('post-update-cmd', '@php artisan boost:update --ansi');
     }
 }

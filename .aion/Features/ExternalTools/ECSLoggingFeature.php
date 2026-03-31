@@ -6,21 +6,23 @@ use Aion\Choices\Enums\ConfigKeyEnum;
 use Aion\Choices\Enums\LoggingInfrastructureEnum;
 use Aion\Engine\AionConfig;
 use Aion\Engine\Operations\CopyFileOperation;
+use Aion\Engine\Operations\DeleteFileOperation;
 use Aion\Engine\Operations\DeleteFolderOperation;
 use Aion\Engine\Operations\ReplaceTextOperation;
 use Aion\Engine\PathResolver;
+use Aion\Engine\PromptTypeEnum;
 use Aion\Features\AionFeatureContract;
 use Aion\Features\OptionDefinition;
 use Aion\Stacks\StackStrategyContract;
 
 readonly class ECSLoggingFeature implements AionFeatureContract
 {
-    public static function getOptionSchema(): array
+    public static function getOptionsDefinitions(): array
     {
         return [
             ConfigKeyEnum::LoggingStructure->value => new OptionDefinition(
                 label: 'Do you want to use standardized logging structure (ECS)?',
-                type: 'select',
+                type: PromptTypeEnum::Select,
                 default: LoggingInfrastructureEnum::Laravel->value,
                 options: LoggingInfrastructureEnum::toOptions(),
                 hint: 'Read more: https://www.elastic.co/docs/reference/ecs/ecs-log',
@@ -50,12 +52,18 @@ readonly class ECSLoggingFeature implements AionFeatureContract
         yield new ReplaceTextOperation(
             filePath: 'bootstrap/app.php',
             search: 'InitiateSharedLoggingContextMiddleware',
-            replace: 'InitiateSharedEcsLoggingContextMiddleware'
+            replace: 'InitiateSharedEcsLoggingContextMiddleware',
         );
     }
 
     private function getCleanupOperations(): iterable
     {
-        yield new DeleteFolderOperation('tools/ecs-logging');
+        yield new DeleteFolderOperation('app/Infrastructure/Logging/ECS');
+
+        yield new DeleteFileOperation('app/Infrastructure/Http/Middleware/InitiateSharedEcsLoggingContextMiddleware.php');
+
+        yield new DeleteFileOperation('tests/App/Infrastructure/Http/Middleware/InitiateSharedEcsLoggingContextMiddlewareUnitTest.php');
+
+        yield new DeleteFolderOperation('tests/App/Infrastructure/Logging/ECS');
     }
 }

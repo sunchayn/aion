@@ -9,15 +9,15 @@ use Aion\Engine\AionConfig;
 use Aion\Engine\Engine;
 use Aion\Engine\FeatureRegistry;
 use Aion\Engine\PathResolver;
+use Aion\Engine\PromptTypeEnum;
 use Aion\Features\Authentication\ApiTokensFeature;
 use Aion\Features\Authentication\OAuthFeature;
 use Aion\Features\ExternalTools\ECSLoggingFeature;
+use Aion\Features\OptionDefinition;
 use Aion\Features\System\AgenticAiSystemFeature;
 use Aion\Features\System\DatabaseSystemFeature;
 use Aion\Features\System\LogSystemFeature;
 use Aion\Features\System\PhpStanSystemFeature;
-use Aion\Stacks\ApiWithDefaultFrontEndSupportStack;
-use Aion\Stacks\BareApiStack;
 use Aion\Stacks\StackStrategyContract;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -40,15 +40,29 @@ class AionSparkCommand extends Command
 
     private bool $isInteractive = false;
 
+    private OutputInterface $output;
+
     protected function configure(): void
     {
         $this->setName($this->name)
             ->addOption('dry-run', description: 'Execute a dry run of the bake process.')
-            ->addOption(ConfigKeyEnum::Frontend->value, mode: InputOption::VALUE_NEGATABLE, description: 'Include frontend support.');
+            ->addOption(
+                ConfigKeyEnum::Frontend->value,
+                mode: InputOption::VALUE_NEGATABLE,
+                description: $this->getWhetherWantToUseFrontendOptionDefinition()->label,
+            );
 
         $this->bootstrapFeatureRegistry();
+    }
 
-        $this->addDynamicOptionsFromFeatures();
+    private static function getWhetherWantToUseFrontendOptionDefinition(): OptionDefinition
+    {
+        return new OptionDefinition(
+            label: 'Do you need a Frontend?',
+            type: PromptTypeEnum::Confirm,
+            default: false,
+            hint: 'Determines the technology stack for your application.',
+        );
     }
 
     private function bootstrapFeatureRegistry(): void
@@ -59,11 +73,6 @@ class AionSparkCommand extends Command
 
         self::$featureRegistry = new FeatureRegistry;
 
-        self::$featureRegistry->registerStacks([
-            BareApiStack::class,
-            ApiWithDefaultFrontEndSupportStack::class,
-        ]);
-
         self::$featureRegistry->registerFeatures([
             ApiTokensFeature::class,
             OAuthFeature::class,
@@ -73,6 +82,8 @@ class AionSparkCommand extends Command
             PhpStanSystemFeature::class,
             AgenticAiSystemFeature::class,
         ]);
+
+        $this->addDynamicOptionsFromFeatures();
     }
 
     private function addDynamicOptionsFromFeatures(): void
@@ -82,7 +93,7 @@ class AionSparkCommand extends Command
                 continue;
             }
 
-            $type = $definition->type === 'confirm'
+            $type = $definition->type === PromptTypeEnum::Confirm
                 ? InputOption::VALUE_NEGATABLE
                 : InputOption::VALUE_REQUIRED;
 
@@ -93,6 +104,7 @@ class AionSparkCommand extends Command
     /** @throws Throwable */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $this->output = $output;
         $this->bootstrapFeatureRegistry();
         $this->ui = new SparkUI($output);
         $this->configurationPrompter = new ConfigurationPrompter($input);
@@ -100,20 +112,19 @@ class AionSparkCommand extends Command
 
         $this->ui->displayHeader();
 
-        [$stackStrategy, $aionConfig] = $this->promptForConfiguration($output);
+        [$stackStrategy, $aionConfig] = $this->promptForConfiguration();
 
-        $this->runEngine(
+        $this->runCompositionEngine(
             $stackStrategy,
             $aionConfig,
-            $output,
             dryRun: (bool) $input->getOption('dry-run'),
         );
 
         if (! $input->getOption('dry-run')) {
-            $this->installDependencies($output, $aionConfig);
+            $this->installDependencies($aionConfig);
         }
 
-        info('>_ ✨ Setup is complete. Enjoy your new Aion-backed project!'.($input->getOption('dry-run') ? ' (Dry Run Complete)' : ''));
+        $this->ui->displaySuccess('Setup is complete. Enjoy your new Aion-backed project!'.($input->getOption('dry-run') ? ' (Dry Run Complete)' : ''));
 
         if (PHP_OS_FAMILY === 'Windows' && ! $input->getOption('dry-run')) {
             info('>_ Note: On Windows, you should manually delete the .aion folder to finish the cleanup.');
@@ -123,37 +134,40 @@ class AionSparkCommand extends Command
     }
 
     /** @return array{0: StackStrategyContract, 1: AionConfig} */
-    private function promptForConfiguration(OutputInterface $output): array
+    private function promptForConfiguration(): array
     {
         while (true) {
-            $stack = $this->resolveStack($output);
-            $aionConfig = $this->resolveAionConfig($output);
+            $stackDefinition = $this->getWhetherWantToUseFrontendOptionDefinition();
 
-            if ($this->confirmSetup($stack, $aionConfig)) {
+            $stack = $this->resolveStack($stackDefinition);
+
+            $aionConfig = $this->resolveAionConfig();
+
+            if ($this->confirmSetup($stack, $aionConfig, $stackDefinition)) {
                 return [$stack, $aionConfig];
             }
 
-            $output->writeln("\n<fg=yellow>Restarting configuration...</>\n");
+            $this->output->writeln("\n<fg=yellow>Restarting configuration...</>\n");
         }
     }
 
-    private function resolveStack(OutputInterface $output): StackStrategyContract
+    private function resolveStack(OptionDefinition $definition): StackStrategyContract
     {
-        $output->writeln("\n<comment>>_ First, let's pick your technology stack.</comment>");
+        $this->output->writeln("\n<comment>>_ First, let's pick your technology stack.</comment>");
 
-        return $this->configurationPrompter->promptForStack();
+        return $this->configurationPrompter->promptForStack($definition);
     }
 
-    private function resolveAionConfig(OutputInterface $output): AionConfig
+    private function resolveAionConfig(): AionConfig
     {
-        $output->writeln("\n<comment>>_ Awesome. Let's configure your application.</comment>\n");
+        $this->output->writeln("\n<comment>>_ Awesome. Let's configure your application.</comment>\n");
 
         return $this->configurationPrompter->promptForConfiguration(
             optionDefinitions: self::$featureRegistry->getOptionDefinitions(),
         );
     }
 
-    private function confirmSetup(StackStrategyContract $stack, AionConfig $config): bool
+    private function confirmSetup(StackStrategyContract $stack, AionConfig $config, OptionDefinition $stackDefinition): bool
     {
         if ($this->isInteractive === false) {
             return true;
@@ -162,46 +176,35 @@ class AionSparkCommand extends Command
         $this->ui->displaySummary(
             stack: $stack,
             config: $config,
-            optionDefinitions: self::$featureRegistry->getOptionDefinitions(),
+            optionDefinitions: [
+                ConfigKeyEnum::Frontend->value => $stackDefinition,
+                ...self::$featureRegistry->getOptionDefinitions(),
+            ],
         );
 
         return confirm(label: 'Is this configuration correct?');
     }
 
     /** @throws Throwable */
-    private function runEngine(
+    private function runCompositionEngine(
         StackStrategyContract $stackStrategy,
         AionConfig $aionConfig,
-        OutputInterface $output,
         bool $dryRun = false,
     ): void {
         $engine = new Engine(
-            registry: self::$featureRegistry,
+            featureRegistry: self::$featureRegistry,
             stack: $stackStrategy,
             configuration: $aionConfig,
             pathResolver: new PathResolver(getcwd()),
             dryRun: $dryRun,
         );
 
-        $titleSection = $output->section();
-        $titleSection->overwrite('Putting things together...');
-
-        $progressSection = $output->section();
-
-        $engine->bake(function (string $description) use ($progressSection) {
-            $progressSection->overwrite("> $description");
-
-            usleep(rand(50_000, 150_000));
-        });
-
-        $progressSection->overwrite('100%');
-        $titleSection->overwrite('Putting things together... Done!');
-        usleep(350_000);
-
-        $output->writeln('');
+        $this->ui->displayProgress(
+            progressSteps: $engine->yieldBakingOperations(),
+        );
     }
 
-    private function installDependencies(OutputInterface $output, AionConfig $config): void
+    private function installDependencies(AionConfig $config): void
     {
         if ($this->isInteractive && ! confirm('Would you like to install the composer dependencies now?')) {
             return;
@@ -218,6 +221,6 @@ class AionSparkCommand extends Command
             passthru('php artisan boost:install');
         }
 
-        $output->writeln('');
+        $this->output->writeln('');
     }
 }

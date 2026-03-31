@@ -12,16 +12,9 @@ class ReplaceTextOperation implements OperationContract
         private readonly string $replace
     ) {}
 
-    public function execute(FilesystemOperator $filesystem): void
+    public function getDescription(): string
     {
-        if (! $filesystem->fileExists($this->filePath)) {
-            return;
-        }
-
-        $content = $filesystem->read($this->filePath);
-        $content = str_replace($this->search, $this->replace, $content);
-
-        $filesystem->write($this->filePath, $content);
+        return "Making replacements in {$this->filePath}";
     }
 
     public function validate(FilesystemOperator $filesystem): void
@@ -31,24 +24,15 @@ class ReplaceTextOperation implements OperationContract
         }
     }
 
-    public function getDescription(): string
+    public function execute(FilesystemOperator $filesystem): void
     {
-        return "Making replacements in {$this->filePath}";
-    }
-
-    /**
-     * @param  string[]|string  $filePaths
-     * @return self[]
-     */
-    public static function all(array|string $filePaths, string $search, string $replace): array
-    {
-        $filePaths = (array) $filePaths;
-        $operations = [];
-
-        foreach ($filePaths as $filePath) {
-            $operations[] = new self($filePath, $search, $replace);
+        if (! $filesystem->fileExists($this->filePath)) {
+            throw new \RuntimeException("Target file '{$this->filePath}' for replacement does not exist.");
         }
 
-        return $operations;
+        $content = $filesystem->read($this->filePath);
+        $content = str_replace($this->search, $this->replace, $content);
+
+        $filesystem->write($this->filePath, $content);
     }
 }

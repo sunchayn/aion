@@ -7,18 +7,19 @@ use Aion\Choices\Enums\DatabaseConnectionEnum;
 use Aion\Engine\AionConfig;
 use Aion\Engine\Operations\RemoveConfigBlockOperation;
 use Aion\Engine\PathResolver;
+use Aion\Engine\PromptTypeEnum;
 use Aion\Features\AionFeatureContract;
 use Aion\Features\OptionDefinition;
 use Aion\Stacks\StackStrategyContract;
 
 readonly class DatabaseSystemFeature implements AionFeatureContract
 {
-    public static function getOptionSchema(): array
+    public static function getOptionsDefinitions(): array
     {
         return [
             ConfigKeyEnum::DB->value => new OptionDefinition(
                 label: 'Select needed DB connections',
-                type: 'multiselect',
+                type: PromptTypeEnum::MultiSelect,
                 default: [DatabaseConnectionEnum::MySQL->value, DatabaseConnectionEnum::SQLite->value],
                 options: DatabaseConnectionEnum::toOptions(),
                 transformer: fn ($value) => is_array($value)
@@ -31,6 +32,7 @@ readonly class DatabaseSystemFeature implements AionFeatureContract
     public function getOperations(StackStrategyContract $stack, AionConfig $config, PathResolver $pathResolver): iterable
     {
         $selected = $config->array(ConfigKeyEnum::DB);
+
         $selectedValues = array_map(fn (DatabaseConnectionEnum $dbConnection) => $dbConnection->value, $selected);
 
         $allConnections = array_map(fn (DatabaseConnectionEnum $dbConnection) => $dbConnection->value, DatabaseConnectionEnum::cases());

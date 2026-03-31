@@ -9,6 +9,8 @@ interface StackStrategyContract
 {
     public function getName(): string;
 
+    public function getDescription(): string;
+
     /**
      * @return OperationContract[]
      */

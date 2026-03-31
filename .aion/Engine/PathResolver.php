@@ -2,20 +2,17 @@
 
 namespace Aion\Engine;
 
-/**
- * Utility class to resolve paths within the Aion system.
- */
 class PathResolver
 {
-    private const INTERNAL_DIR = '.aion';
+    private const string INTERNAL_DIR = '.aion';
 
-    private const STUBS_DIR = '.aion/stubs';
-
-    private const TEMP_DIR = '.aion/.temp';
+    private const string STUBS_DIR = '.aion/stubs';
 
     public function __construct(
-        private readonly string $projectRoot
-    ) {}
+        private string $projectRoot
+    ) {
+        $this->projectRoot = $this->ensureNoTrailingSlashes(str_replace('\\', '/', $this->projectRoot));
+    }
 
     /**
      * Resolve path relative to the target project root.
@@ -41,20 +38,15 @@ class PathResolver
         return $this->join(self::INTERNAL_DIR, $path);
     }
 
-    /**
-     * Resolve path for temporary files.
-     */
-    public function temp(string $path = ''): string
-    {
-        return $this->join(self::TEMP_DIR, $path);
-    }
-
     private function join(string $base, string $path): string
     {
-        $path = ltrim($path, '/');
+        $path = ltrim($this->ensureNoTrailingSlashes(str_replace('\\', '/', $path)), '/');
 
-        return $path === ''
-            ? $base
-            : rtrim($base, '/').'/'.$path;
+        return $path === '' ? $base : "{$base}/{$path}";
+    }
+
+    private function ensureNoTrailingSlashes(string $path): string
+    {
+        return rtrim($path, '/\\');
     }
 }

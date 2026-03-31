@@ -11,12 +11,20 @@ class RemoveConfigBlockOperation implements OperationContract
         private readonly string $key
     ) {}
 
-    public function execute(FilesystemOperator $filesystem): void
+    public function getDescription(): string
+    {
+        return "Removing config block '{$this->key}' from {$this->filePath}";
+    }
+
+    public function validate(FilesystemOperator $filesystem): void
     {
         if (! $filesystem->fileExists($this->filePath)) {
-            return;
+            throw new \RuntimeException("Target file '{$this->filePath}' for config block removal does not exist.");
         }
+    }
 
+    public function execute(FilesystemOperator $filesystem): void
+    {
         $content = $filesystem->read($this->filePath);
 
         // This regex targets a key matching 'key' => [ ... ]
@@ -28,17 +36,5 @@ class RemoveConfigBlockOperation implements OperationContract
         if ($newContent !== $content && $newContent !== null) {
             $filesystem->write($this->filePath, $newContent);
         }
-    }
-
-    public function validate(FilesystemOperator $filesystem): void
-    {
-        if (! $filesystem->fileExists($this->filePath)) {
-            throw new \RuntimeException("Target file '{$this->filePath}' for config block removal does not exist.");
-        }
-    }
-
-    public function getDescription(): string
-    {
-        return "Removing config block '{$this->key}' from {$this->filePath}";
     }
 }

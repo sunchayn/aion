@@ -7,18 +7,19 @@ use Aion\Choices\Enums\PhpStanLevelEnum;
 use Aion\Engine\AionConfig;
 use Aion\Engine\Operations\ReplaceTextOperation;
 use Aion\Engine\PathResolver;
+use Aion\Engine\PromptTypeEnum;
 use Aion\Features\AionFeatureContract;
 use Aion\Features\OptionDefinition;
 use Aion\Stacks\StackStrategyContract;
 
 readonly class PhpStanSystemFeature implements AionFeatureContract
 {
-    public static function getOptionSchema(): array
+    public static function getOptionsDefinitions(): array
     {
         return [
             ConfigKeyEnum::PhpStan->value => new OptionDefinition(
                 label: 'Select PHPStan strictness level',
-                type: 'select',
+                type: PromptTypeEnum::Select,
                 default: PhpStanLevelEnum::Level8->value,
                 options: PhpStanLevelEnum::toOptions(),
                 transformer: fn ($value) => PhpStanLevelEnum::from($value)

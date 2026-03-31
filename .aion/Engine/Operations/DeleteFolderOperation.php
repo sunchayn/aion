@@ -10,28 +10,20 @@ class DeleteFolderOperation implements OperationContract
         private readonly string $path
     ) {}
 
-    /**
-     * @return self[]
-     */
-    public static function all(string|array $paths): array
+    public function getDescription(): string
     {
-        return array_map(fn ($path) => new self($path), (array) $paths);
-    }
-
-    public function execute(FilesystemOperator $filesystem): void
-    {
-        if ($filesystem->directoryExists($this->path)) {
-            $filesystem->deleteDirectory($this->path);
-        }
+        return "Deleting folder: {$this->path}";
     }
 
     public function validate(FilesystemOperator $filesystem): void
     {
-        // Deleting folders is always safe even if they don't exist.
+        if (! $filesystem->directoryExists($this->path)) {
+            throw new \RuntimeException("Target folder '{$this->path}' for deletion does not exist.");
+        }
     }
 
-    public function getDescription(): string
+    public function execute(FilesystemOperator $filesystem): void
     {
-        return "Deleting folder: {$this->path}";
+        $filesystem->deleteDirectory($this->path);
     }
 }

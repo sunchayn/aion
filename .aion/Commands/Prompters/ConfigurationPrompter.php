@@ -4,6 +4,7 @@ namespace Aion\Commands\Prompters;
 
 use Aion\Choices\Enums\ConfigKeyEnum;
 use Aion\Engine\AionConfig;
+use Aion\Engine\PromptTypeEnum;
 use Aion\Features\OptionDefinition;
 use Aion\Stacks\ApiWithDefaultFrontEndSupportStack;
 use Aion\Stacks\BareApiStack;
@@ -21,12 +22,14 @@ class ConfigurationPrompter
         private readonly InputInterface $input
     ) {}
 
-    public function promptForStack(): StackStrategyContract
+    public function promptForStack(OptionDefinition $definition): StackStrategyContract
     {
         $requireFe = $this->handleConfirmation(
             option: ConfigKeyEnum::Frontend,
-            label: 'Do you need a Frontend?',
-            displayName: 'Using Frontend',
+            label: $definition->label,
+            displayName: $definition->label,
+            default: $definition->default,
+            hint: $definition->hint,
         );
 
         return $requireFe
@@ -47,32 +50,31 @@ class ConfigurationPrompter
                 continue;
             }
 
-            $config->add($key, $this->askQuestion($key, $definition));
+            $config->add($key, $this->resolveOptionValue($key, $definition));
         }
 
         return $config;
     }
 
-    private function askQuestion(string|ConfigKeyEnum $key, OptionDefinition $definition): mixed
+    private function resolveOptionValue(string|ConfigKeyEnum $key, OptionDefinition $definition): mixed
     {
         $value = match ($definition->type) {
-            'confirm' => $this->handleConfirmation(
+            PromptTypeEnum::Confirm => $this->handleConfirmation(
                 option: $key,
                 label: $definition->label,
                 displayName: $definition->label,
                 default: $definition->default,
                 hint: $definition->hint,
             ),
-            'select', 'multiselect' => $this->handleSelection(
+            PromptTypeEnum::Select, PromptTypeEnum::MultiSelect => $this->handleSelection(
                 option: $key,
                 label: $definition->label,
                 options: $definition->options,
                 default: $definition->default,
                 displayName: $definition->label,
-                isMulti: $definition->type === 'multiselect',
+                isMulti: $definition->type === PromptTypeEnum::MultiSelect,
                 hint: $definition->hint,
             ),
-            default => throw new \InvalidArgumentException("Unsupported question type: {$definition->type}"),
         };
 
         return $definition->transform($value);

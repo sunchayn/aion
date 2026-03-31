@@ -4,40 +4,39 @@ namespace Aion\Engine\Operations;
 
 use League\Flysystem\FilesystemOperator;
 
-use function Laravel\Prompts\error;
-
 class RunCommandOperation implements OperationContract
 {
     public function __construct(
         private readonly string $command,
-        private readonly bool $quite = false,
+        private readonly bool $quiet = false,
     ) {}
+
+    public function getDescription(): string
+    {
+        return "Running command: {$this->command}";
+    }
+
+    public function validate(FilesystemOperator $filesystem): void
+    {
+        // Nothing to validate here.
+    }
 
     public function execute(FilesystemOperator $filesystem): void
     {
-        if ($this->quite) {
-            exec($this->command, $output, $return);
+        if (! $this->quiet) {
+            passthru($this->command, $return);
 
             if ($return !== 0) {
-                error($output[0] ?? 'Command didn\'t finish successfully!');
-
-                return;
+                throw new \RuntimeException("Command '{$this->command}' failed with exit code {$return}.");
             }
 
             return;
         }
 
-        passthru($this->command);
-    }
+        exec($this->command, $output, $return);
 
-    public function validate(FilesystemOperator $filesystem): void
-    {
-        // Commands are hard to validate without running them.
-        // We could check if the binary exists if we parsed the command, but let's keep it simple.
-    }
-
-    public function getDescription(): string
-    {
-        return "Running command: {$this->command}";
+        if ($return !== 0) {
+            throw new \RuntimeException(($output[0] ?? "Command '{$this->command}' failed")." with exit code {$return}.");
+        }
     }
 }

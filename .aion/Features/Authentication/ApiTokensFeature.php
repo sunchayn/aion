@@ -10,6 +10,7 @@ use Aion\Engine\Operations\CopyFileOperation;
 use Aion\Engine\Operations\ReplaceRegexOperation;
 use Aion\Engine\Operations\ReplaceTextOperation;
 use Aion\Engine\PathResolver;
+use Aion\Engine\PromptTypeEnum;
 use Aion\Features\AionFeatureContract;
 use Aion\Features\OptionDefinition;
 use Aion\Stacks\BareApiStack;
@@ -17,12 +18,12 @@ use Aion\Stacks\StackStrategyContract;
 
 readonly class ApiTokensFeature implements AionFeatureContract
 {
-    public static function getOptionSchema(): array
+    public static function getOptionsDefinitions(): array
     {
         return [
             ConfigKeyEnum::ApiType->value => new OptionDefinition(
                 label: 'Do you want to have stateless or stateful API?',
-                type: 'select',
+                type: PromptTypeEnum::Select,
                 default: ApiTypeEnum::Stateless->value,
                 options: ApiTypeEnum::toOptions(),
                 hint: 'Stateless uses tokens. Stateful uses cookies/sessions.',
@@ -74,7 +75,7 @@ readonly class ApiTokensFeature implements AionFeatureContract
             yield new ReplaceRegexOperation(
                 filePath: $file,
                 pattern: '/\s*\$this->skipTestWhenJwtIsNotAvailable\(\);/s',
-                replacement: ''
+                replacement: '',
             );
         }
 
@@ -87,7 +88,7 @@ readonly class ApiTokensFeature implements AionFeatureContract
             yield new ReplaceRegexOperation(
                 filePath: $file,
                 pattern: '/\s*protected function setUp\(\): void\s*\{[^}]*?\$this->skipTestWhenJwtIsNotAvailable\(\);[^}]*\}/s',
-                replacement: ''
+                replacement: '',
             );
         }
     }
@@ -106,7 +107,7 @@ readonly class ApiTokensFeature implements AionFeatureContract
             yield new ReplaceTextOperation(
                 filePath: $point['file'],
                 search: $point['search'],
-                replace: ''
+                replace: '',
             );
         }
     }

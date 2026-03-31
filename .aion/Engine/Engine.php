@@ -7,7 +7,6 @@ use Aion\Engine\Operations\DeleteFileOperation;
 use Aion\Engine\Operations\DeleteFolderOperation;
 use Aion\Engine\Operations\OperationContract;
 use Aion\Engine\Operations\RunCommandOperation;
-use Aion\Features\AionFeatureContract;
 use Aion\Stacks\StackStrategyContract;
 use League\Flysystem\Filesystem;
 use League\Flysystem\FilesystemOperator;
@@ -15,25 +14,23 @@ use League\Flysystem\Local\LocalFilesystemAdapter;
 
 class Engine
 {
-    private readonly FilesystemOperator $filesystem;
-
     public function __construct(
-        private readonly FeatureRegistry $registry,
+        private readonly FeatureRegistry $featureRegistry,
         private readonly StackStrategyContract $stack,
         private readonly AionConfig $configuration,
         private readonly PathResolver $pathResolver,
         private readonly bool $dryRun = false,
+        private ?FilesystemOperator $filesystem = null,
     ) {
-        $adapter = new LocalFilesystemAdapter($this->pathResolver->root());
-        $this->filesystem = new Filesystem($adapter);
+        $this->filesystem ??= new Filesystem(new LocalFilesystemAdapter($this->pathResolver->root()));
     }
 
-    public function bake(callable $onProgress): void
+    public function yieldBakingOperations(): iterable
     {
         $operations = $this->resolveOperations();
 
         foreach ($operations as $operation) {
-            $onProgress($operation->getDescription().($this->dryRun ? ' (Dry Run)' : ''));
+            yield $operation->getDescription().($this->dryRun ? ' (Dry Run)' : '');
 
             $operation->validate($this->filesystem);
 
@@ -54,16 +51,6 @@ class Engine
         ];
     }
 
-    /** @return iterable<OperationContract> */
-    private function getFeatureOperations(): iterable
-    {
-        foreach ($this->registry->getFeatures() as $featureClass) {
-            /** @var AionFeatureContract $feature */
-            $feature = new $featureClass;
-            yield from $feature->getOperations($this->stack, $this->configuration, $this->pathResolver);
-        }
-    }
-
     /** @return OperationContract[] */
     private function initializationOperations(): array
     {
@@ -76,11 +63,19 @@ class Engine
         ];
     }
 
+    /** @return iterable<OperationContract> */
+    private function getFeatureOperations(): iterable
+    {
+        foreach ($this->featureRegistry->getFeatures() as $feature) {
+            yield from $feature->getOperations($this->stack, $this->configuration, $this->pathResolver);
+        }
+    }
+
     /** @return OperationContract[] */
     private function cleanupOperations(): array
     {
         $cleanup = [
-            new RunCommandOperation('composer exec pint', quite: true),
+            new RunCommandOperation('composer exec pint', quiet: true),
             new DeleteFileOperation('.github/workflows/aion-tests.yml'),
         ];
 

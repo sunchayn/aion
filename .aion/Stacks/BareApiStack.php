@@ -6,9 +6,7 @@ use Aion\Engine\PathResolver;
 
 class BareApiStack implements StackStrategyContract
 {
-    public function __construct(
-        private readonly string $appName = 'Api'
-    ) {}
+    public function __construct() {}
 
     public function getName(): string
     {
@@ -27,7 +25,7 @@ class BareApiStack implements StackStrategyContract
 
     public function getApiName(): string
     {
-        return $this->appName;
+        return 'Api';
     }
 
     public function getWebName(): string

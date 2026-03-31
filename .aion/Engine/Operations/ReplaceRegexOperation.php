@@ -12,16 +12,9 @@ class ReplaceRegexOperation implements OperationContract
         private readonly string $replacement
     ) {}
 
-    public function execute(FilesystemOperator $filesystem): void
+    public function getDescription(): string
     {
-        if (! $filesystem->fileExists($this->filePath)) {
-            return;
-        }
-
-        $content = $filesystem->read($this->filePath);
-        $content = preg_replace($this->pattern, $this->replacement, $content);
-
-        $filesystem->write($this->filePath, $content);
+        return "Making regex replacements in {$this->filePath}";
     }
 
     public function validate(FilesystemOperator $filesystem): void
@@ -37,8 +30,11 @@ class ReplaceRegexOperation implements OperationContract
         }
     }
 
-    public function getDescription(): string
+    public function execute(FilesystemOperator $filesystem): void
     {
-        return "Making regex replacements in {$this->filePath}";
+        $content = $filesystem->read($this->filePath);
+        $content = preg_replace($this->pattern, $this->replacement, $content);
+
+        $filesystem->write($this->filePath, $content);
     }
 }

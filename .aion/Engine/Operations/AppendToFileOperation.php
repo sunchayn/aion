@@ -11,17 +11,9 @@ class AppendToFileOperation implements OperationContract
         private readonly string $content
     ) {}
 
-    public function execute(FilesystemOperator $filesystem): void
+    public function getDescription(): string
     {
-        if (! $filesystem->fileExists($this->filePath)) {
-            return;
-        }
-
-        $content = $filesystem->read($this->filePath);
-
-        $content = rtrim($content)."\n\n".ltrim($this->content)."\n";
-
-        $filesystem->write($this->filePath, $content);
+        return "Appending content to {$this->filePath}";
     }
 
     public function validate(FilesystemOperator $filesystem): void
@@ -31,8 +23,12 @@ class AppendToFileOperation implements OperationContract
         }
     }
 
-    public function getDescription(): string
+    public function execute(FilesystemOperator $filesystem): void
     {
-        return "Appending content to {$this->filePath}";
+        $content = $filesystem->read($this->filePath);
+
+        $content = rtrim($content)."\n\n".ltrim($this->content)."\n";
+
+        $filesystem->write($this->filePath, $content);
     }
 }

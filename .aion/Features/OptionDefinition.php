@@ -3,25 +3,23 @@
 namespace Aion\Features;
 
 use Aion\Engine\AionConfig;
+use Aion\Engine\PromptTypeEnum;
 use Closure;
 
-/**
- * Defines a single configuration option for a feature.
- */
 class OptionDefinition
 {
     /**
      * @param  string  $label  The label for the prompt.
-     * @param  string  $type  The type of prompt (confirm, select, multiselect).
+     * @param  PromptTypeEnum  $type  The type of prompt.
      * @param  mixed  $default  The default value.
      * @param  array<string, string>  $options  Available options for select/multiselect.
      * @param  string|null  $hint  A hint for the user.
-     * @param  (Closure(): bool)|null  $shouldSkip  A closure to check the option eligibility.
+     * @param  (Closure(AionConfig): bool)|null  $shouldSkip  A closure to check the option eligibility.
      * @param  Closure|null  $transformer  A closure to transform the raw input into a type-safe value.
      */
     public function __construct(
         public string $label,
-        public string $type,
+        public PromptTypeEnum $type,
         public mixed $default,
         public array $options = [],
         public ?string $hint = null,

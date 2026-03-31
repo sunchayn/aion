@@ -11,13 +11,9 @@ class CopyFileOperation implements OperationContract
         private readonly string $destination,
     ) {}
 
-    public function execute(FilesystemOperator $filesystem): void
+    public function getDescription(): string
     {
-        if ($filesystem->fileExists($this->destination)) {
-            $filesystem->delete($this->destination);
-        }
-
-        $filesystem->copy($this->source, $this->destination);
+        return 'Copying '.basename($this->source).' to '.$this->destination;
     }
 
     public function validate(FilesystemOperator $filesystem): void
@@ -27,8 +23,12 @@ class CopyFileOperation implements OperationContract
         }
     }
 
-    public function getDescription(): string
+    public function execute(FilesystemOperator $filesystem): void
     {
-        return 'Copying '.basename($this->source).' to '.$this->destination;
+        if ($filesystem->fileExists($this->destination)) {
+            $filesystem->delete($this->destination);
+        }
+
+        $filesystem->copy($this->source, $this->destination);
     }
 }

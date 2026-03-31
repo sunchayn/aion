@@ -6,30 +6,18 @@ use League\Flysystem\FilesystemOperator;
 
 class RemoveComposerDependencyOperation implements OperationContract
 {
+    use Concerns\InteractsWithComposer;
+
     public function __construct(
         private readonly string $packageName,
         private readonly bool $dev = false
     ) {}
 
-    public function execute(FilesystemOperator $filesystem): void
+    public function getDescription(): string
     {
-        $composerPath = 'composer.json';
+        $type = $this->dev ? 'dev ' : '';
 
-        if (! $filesystem->fileExists($composerPath)) {
-            return;
-        }
-
-        $composer = json_decode($filesystem->read($composerPath), true);
-        $section = $this->dev ? 'require-dev' : 'require';
-
-        if (isset($composer[$section][$this->packageName])) {
-            unset($composer[$section][$this->packageName]);
-        }
-
-        $filesystem->write(
-            $composerPath,
-            json_encode($composer, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES).PHP_EOL
-        );
+        return "Removing {$type}composer dependency '{$this->packageName}'";
     }
 
     public function validate(FilesystemOperator $filesystem): void
@@ -39,10 +27,14 @@ class RemoveComposerDependencyOperation implements OperationContract
         }
     }
 
-    public function getDescription(): string
+    public function execute(FilesystemOperator $filesystem): void
     {
-        $type = $this->dev ? 'dev ' : '';
+        $this->updateComposer($filesystem, 'remove dependency', function (array $composer) {
+            $section = $this->dev ? 'require-dev' : 'require';
 
-        return "Removing {$type}composer dependency '{$this->packageName}'";
+            unset($composer[$section][$this->packageName]);
+
+            return $composer;
+        });
     }
 }

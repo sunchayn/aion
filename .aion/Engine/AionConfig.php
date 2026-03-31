@@ -9,11 +9,13 @@ use Aion\Choices\Enums\ConfigKeyEnum;
  */
 class AionConfig
 {
+    /** @var array<string, mixed> */
     private array $config = [];
 
     public function add(string|ConfigKeyEnum $key, mixed $value): self
     {
         $key = $key instanceof ConfigKeyEnum ? $key->value : $key;
+
         $this->config[$key] = $value;
 
         return $this;

@@ -6,20 +6,32 @@ use League\Flysystem\FilesystemOperator;
 
 class CopyDirectoryOperation implements OperationContract
 {
+    private readonly string $source;
+
+    private readonly string $destination;
+
     public function __construct(
-        private string $source,
-        private string $destination
+        string $source,
+        string $destination
     ) {
-        $this->source = str_replace('\\', '/', $this->source);
-        $this->destination = str_replace('\\', '/', $this->destination);
+        $this->source = str_replace('\\', '/', $source);
+        $this->destination = str_replace('\\', '/', $destination);
+    }
+
+    public function getDescription(): string
+    {
+        return "Copying directory from {$this->source} to {$this->destination}";
+    }
+
+    public function validate(FilesystemOperator $filesystem): void
+    {
+        if (! $filesystem->directoryExists($this->source)) {
+            throw new \RuntimeException("Source directory '{$this->source}' does not exist.");
+        }
     }
 
     public function execute(FilesystemOperator $filesystem): void
     {
-        if (! $filesystem->directoryExists($this->source)) {
-            return;
-        }
-
         $listing = $filesystem->listContents($this->source, true);
 
         foreach ($listing as $item) {
@@ -30,20 +42,9 @@ class CopyDirectoryOperation implements OperationContract
                 if ($filesystem->fileExists($destinationPath)) {
                     $filesystem->delete($destinationPath);
                 }
+
                 $filesystem->copy($sourcePath, $destinationPath);
             }
         }
-    }
-
-    public function validate(FilesystemOperator $filesystem): void
-    {
-        if (! $filesystem->directoryExists($this->source)) {
-            throw new \RuntimeException("Source directory '{$this->source}' does not exist.");
-        }
-    }
-
-    public function getDescription(): string
-    {
-        return "Copying directory from {$this->source} to {$this->destination}";
     }
 }

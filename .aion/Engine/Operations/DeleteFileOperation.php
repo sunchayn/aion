@@ -10,28 +10,20 @@ class DeleteFileOperation implements OperationContract
         private readonly string $filePath
     ) {}
 
-    /**
-     * @return self[]
-     */
-    public static function all(string|array $filePaths): array
+    public function getDescription(): string
     {
-        return array_map(fn ($path) => new self($path), (array) $filePaths);
-    }
-
-    public function execute(FilesystemOperator $filesystem): void
-    {
-        if ($filesystem->fileExists($this->filePath)) {
-            $filesystem->delete($this->filePath);
-        }
+        return "Deleting file: {$this->filePath}";
     }
 
     public function validate(FilesystemOperator $filesystem): void
     {
-        // Deleting files is always safe even if they don't exist.
+        if (! $filesystem->fileExists($this->filePath)) {
+            throw new \RuntimeException("Target file '{$this->filePath}' for deletion does not exist.");
+        }
     }
 
-    public function getDescription(): string
+    public function execute(FilesystemOperator $filesystem): void
     {
-        return "Deleting file: {$this->filePath}";
+        $filesystem->delete($this->filePath);
     }
 }

@@ -7,9 +7,6 @@ use Aion\Engine\Operations\OperationContract;
 use Aion\Engine\PathResolver;
 use Aion\Stacks\StackStrategyContract;
 
-/**
- * Contract for all Aion Features.
- */
 interface AionFeatureContract
 {
     /**
@@ -17,7 +14,7 @@ interface AionFeatureContract
      *
      * @return array<string, OptionDefinition>
      */
-    public static function getOptionSchema(): array;
+    public static function getOptionsDefinitions(): array;
 
     /**
      * Get the operations (setup/cleanup) for this feature based on configuration.

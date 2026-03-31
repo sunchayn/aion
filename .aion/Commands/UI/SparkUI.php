@@ -57,6 +57,31 @@ class SparkUI
         $this->output->writeln('');
     }
 
+    public function displayProgress(iterable $progressSteps): void
+    {
+        $titleSection = $this->output->section();
+        $titleSection->overwrite('Putting things together...');
+
+        $progressSection = $this->output->section();
+
+        foreach ($progressSteps as $stepDescription) {
+            $progressSection->overwrite("> $stepDescription");
+
+            $this->sleep(rand(50_000, 150_000));
+        }
+
+        $progressSection->overwrite('100%');
+        $titleSection->overwrite('Putting things together... Done!');
+        $this->sleep(350_000);
+
+        $this->output->writeln('');
+    }
+
+    public function displaySuccess(string $message): void
+    {
+        $this->output->writeln("\n<info>>_ ✨ $message</info>");
+    }
+
     /**
      * @param  array<string, OptionDefinition>  $schemas
      */
@@ -105,6 +130,15 @@ class SparkUI
         return (string) $value;
     }
 
+    private function sleep(int $microseconds): void
+    {
+        if ($this->output->isQuiet() || ! $this->output->isDecorated()) {
+            return;
+        }
+
+        usleep($microseconds);
+    }
+
     private function showHeaderWithAnimation(): void
     {
         $logo = [
@@ -121,20 +155,20 @@ class SparkUI
 
         foreach ($logo as $line) {
             $this->output->writeln($line);
-            usleep(40_000);
+            $this->sleep(40_000);
         }
 
-        usleep(100_000);
+        $this->sleep(100_000);
 
         $subtitle = '   S T A R T E R   K I T';
         $this->output->write(str_repeat(' ', 8));
 
         foreach (mb_str_split($subtitle) as $char) {
             $this->output->write("<fg=green;options=bold>$char</>");
-            usleep(20_000);
+            $this->sleep(20_000);
         }
 
         $this->output->writeln("\n");
-        usleep(200_000);
+        $this->sleep(200_000);
     }
 }
